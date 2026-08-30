@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificación EAMR — Dueña de mi Suerte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&amp;family=Montserrat:wght@300;400;500;600;700&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  :root {
+    --gold: #d4af37;
+    --gold-light: #e6c25a;
+    --gold-pale: #fce082;
+    --gold-dim: #aa820a;
+    --bg-deep: #090c13;
+    --bg-card: #0f1420;
+    --text-secondary: #9aa4b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-deep);
+    color: #e2e6ef;
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 48px;
+  }
+  .card {
+    position: relative;
+    max-width: 440px;
+    width: 100%;
+    background: var(--bg-card);
+    border: 2px solid rgba(212,175,55,0.5);
+    border-radius: 16px;
+    padding: 32px 24px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.7);
+    overflow: hidden;
+  }
+  .card::before, .card::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(212,175,55,0.15);
+    border-radius: 12px;
+    pointer-events: none;
+  }
+  .badge {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .badge i { color: var(--gold-light); font-size: 22px; margin-bottom: 6px; display: block; }
+  .badge .brand {
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    background: linear-gradient(135deg, var(--gold-pale), var(--gold-light), var(--gold-dim));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 20px;
+  }
+  .badge .sub {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .verified-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 18px auto 0;
+    width: fit-content;
+    padding: 6px 16px;
+    border: 1px solid rgba(80,220,140,0.4);
+    background: rgba(80,220,140,0.08);
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: #7be0a8;
+    text-transform: uppercase;
+  }
+  .track-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    text-align: center;
+    font-size: 22px;
+    margin-top: 20px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .track-edition {
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--gold-light);
+    letter-spacing: 0.15em;
+    margin-top: 4px;
+  }
+
+  /* Reproductor */
+  .player {
+    margin-top: 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(212,175,55,0.25);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .progress-wrap {
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold-light));
+    border-radius: 2px;
+  }
+  .time-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+  }
+  .play-btn {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    color: #0d0f16;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .vol-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  /* Ficha técnica */
+  .tech {
+    margin-top: 22px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(212,175,55,0.2);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .tech-row { display: flex; justify-content: space-between; padding: 4px 0; }
+  .tech-row + .tech-row { border-top: 1px solid rgba(255,255,255,0.05); }
+  .tech-label { color: var(--text-secondary); }
+  .tech-value { color: var(--gold-light); text-align: right; }
+
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    color: #5a6172;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* ── Edición (solo admin) ── */
+  .admin-edit-btn {
+    position: fixed;
+    bottom: 14px;
+    right: 14px;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(212,175,55,0.25);
+    background: rgba(15,20,32,0.6);
+    color: rgba(212,175,55,0.35);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 999;
+    transition: opacity 0.2s ease;
+  }
+  .admin-edit-btn:hover { color: var(--gold-light); border-color: var(--gold); }
+
+  .admin-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .admin-modal.open { display: flex; }
+  .admin-panel {
+    background: var(--bg-card);
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 380px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .admin-panel h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold-light);
+    font-size: 15px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .admin-panel h3 span:last-child { cursor: pointer; color: var(--text-secondary); font-family: sans-serif; }
+  .admin-field { margin-bottom: 12px; }
+  .admin-field label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .admin-field input {
+    width: 100%;
+    background: #05070c;
+    border: 1px solid rgba(212,175,55,0.25);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: #e2e6ef;
+    font-size: 12px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .admin-field input:focus { outline: none; border-color: var(--gold); }
+  .admin-save {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    color: #0d0f16;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="badge">
+      <i class="fa-solid fa-shield-halved"></i>
+      <div class="brand">EAMR</div>
+      <div class="sub">Verificación de Autenticidad</div>
+    </div>
+
+    <div class="verified-pill"><i class="fa-solid fa-circle-check"></i> Obra Verificada</div>
+
+    <div class="track-title" id="outTitle">"Dueña de mi Suerte"</div>
+    <div class="track-edition" id="outEdition">EDICION ORIGINAL</div>
+
+    <div class="player">
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+      </div>
+      <div class="time-row">
+        <span id="timeElapsed">0:00</span>
+        <span id="timeDuration">0:00</span>
+      </div>
+      <div class="controls">
+        <button class="vol-btn" id="volBtn"><i class="fa-solid fa-volume-high"></i></button>
+        <button class="play-btn" id="playBtn"><i class="fa-solid fa-play" id="playIcon"></i></button>
+        <button class="vol-btn" style="visibility:hidden"><i class="fa-solid fa-volume-high"></i></button>
+      </div>
+    </div>
+
+    <div class="tech">
+      <div class="tech-row"><span class="tech-label">Titular</span><span class="tech-value" id="outOwner">Restaurante Enchiladeria 453</span></div>
+      <div class="tech-row"><span class="tech-label">Código de Registro</span><span class="tech-value" id="outHash">EAMR-2026-99482-SU</span></div>
+      <div class="tech-row"><span class="tech-label">Huella Acústica</span><span class="tech-value" id="outAcoustic">3F8A-90E2-B411-9A77-EAMR</span></div>
+    </div>
+
+    <div class="footer">EAMR STUDIO CERTIFICATIONS • PROPIEDAD INTELECTUAL GARANTIZADA</div>
+  </div>
+
+  <audio id="audio" src="./audio/duena-de-mi-suerte.mp3" preload="metadata"></audio>
+
+  <!-- Botón de edición: solo para uso interno del administrador (EAMR), discreto para el cliente -->
+  <button class="admin-edit-btn" id="adminEditBtn" title="Editar (admin)"><i class="fa-solid fa-gear"></i></button>
+
+  <div class="admin-modal" id="adminModal">
+    <div class="admin-panel">
+      <h3>Editar Verificación <span id="adminClose">✕</span></h3>
+
+      <div class="admin-field">
+        <label>Título de la Obra</label>
+        <input type="text" id="inTitle" value="Dueña de mi Suerte">
+      </div>
+      <div class="admin-field">
+        <label>Edición Especial</label>
+        <input type="text" id="inEdition" value="SONIC UNICORN EDITION">
+      </div>
+      <div class="admin-field">
+        <label>Titular de Derechos</label>
+        <input type="text" id="inOwner" value="Restaurante Enchiladeria 453">
+      </div>
+      <div class="admin-field">
+        <label>Código de Registro (Hash)</label>
+        <input type="text" id="inHash" value="EAMR-2026-99482-SU">
+      </div>
+      <div class="admin-field">
+        <label>Huella Acústica</label>
+        <input type="text" id="inAcoustic" value="3F8A-90E2-B411-9A77-EAMR">
+      </div>
+      <div class="admin-field">
+        <label>Ruta del archivo de audio</label>
+        <input type="text" id="inAudioPath" value="./audio/duena-de-mi-suerte.mp3">
+      </div>
+
+      <button class="admin-save" id="adminSaveBtn">Aplicar Cambios</button>
+      <button class="admin-save" id="adminDownloadBtn" style="margin-top:8px; background:transparent; border:1px solid rgba(212,175,55,0.4); color:var(--gold-light);">Descargar HTML Listo</button>
+      <p style="font-size:9px; color:var(--text-secondary); margin-top:8px; line-height:1.4;">1. Aplica cambios • 2. Descarga • 3. Sube el archivo (y el MP3 en /audio) al repo de GitHub Pages con el nombre del hash.</p>
+    </div>
+  </div>
+
+<script>
+  const audio = document.getElementById('audio');
+  const playBtn = document.getElementById('playBtn');
+  const playIcon = document.getElementById('playIcon');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressFill = document.getElementById('progressFill');
+  const timeElapsed = document.getElementById('timeElapsed');
+  const timeDuration = document.getElementById('timeDuration');
+  const volBtn = document.getElementById('volBtn');
+
+  function formatTime(s) {
+    if (!isFinite(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+      playIcon.classList.replace('fa-play', 'fa-pause');
+    } else {
+      audio.pause();
+      playIcon.classList.replace('fa-pause', 'fa-play');
+    }
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+    timeElapsed.textContent = formatTime(audio.currentTime);
+  });
+
+  audio.addEventListener('loadedmetadata', () => {
+    timeDuration.textContent = formatTime(audio.duration);
+  });
+
+  audio.addEventListener('ended', () => {
+    playIcon.classList.replace('fa-pause', 'fa-play');
+  });
+
+  progressWrap.addEventListener('click', (e) => {
+    const rect = progressWrap.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    if (audio.duration) audio.currentTime = ratio * audio.duration;
+  });
+
+  let muted = false;
+  volBtn.addEventListener('click', () => {
+    muted = !muted;
+    audio.muted = muted;
+    volBtn.innerHTML = muted
+      ? '<i class="fa-solid fa-volume-xmark"></i>'
+      : '<i class="fa-solid fa-volume-high"></i>';
+  });
+
+  // ── PANEL DE EDICIÓN (uso interno EAMR) ──────────────────────
+  const adminEditBtn = document.getElementById('adminEditBtn');
+  const adminModal = document.getElementById('adminModal');
+  const adminClose = document.getElementById('adminClose');
+  const adminSaveBtn = document.getElementById('adminSaveBtn');
+
+  adminEditBtn.addEventListener('click', () => adminModal.classList.add('open'));
+  adminClose.addEventListener('click', () => adminModal.classList.remove('open'));
+  adminModal.addEventListener('click', (e) => { if (e.target === adminModal) adminModal.classList.remove('open'); });
+
+  adminSaveBtn.addEventListener('click', () => {
+    document.getElementById('outTitle').textContent = '"' + document.getElementById('inTitle').value + '"';
+    document.getElementById('outEdition').textContent = document.getElementById('inEdition').value.toUpperCase();
+    document.getElementById('outOwner').textContent = document.getElementById('inOwner').value;
+    document.getElementById('outHash').textContent = document.getElementById('inHash').value;
+    document.getElementById('outAcoustic').textContent = document.getElementById('inAcoustic').value;
+
+    const newPath = document.getElementById('inAudioPath').value;
+    if (newPath !== audio.getAttribute('src')) {
+      audio.pause();
+      audio.src = newPath;
+      audio.load();
+      playIcon.classList.replace('fa-pause', 'fa-play');
+      progressFill.style.width = '0%';
+      timeElapsed.textContent = '0:00';
+      timeDuration.textContent = '0:00';
+    }
+
+    document.title = 'Verificación EAMR — ' + document.getElementById('inTitle').value;
+    adminModal.classList.remove('open');
+  });
+
+  document.getElementById('adminDownloadBtn').addEventListener('click', () => {
+    adminModal.classList.remove('open');
+    const hash = document.getElementById('inHash').value.trim() || 'EAMR-verificacion';
+    const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = hash + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+</script>
+
+
+</body></html>

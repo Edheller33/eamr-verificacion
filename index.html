@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificado de Autenticidad - EAMR</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Montserrat:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            100: '#FFF3C4',
+                            300: '#FCE082',
+                            400: '#E6C25A',
+                            500: '#D4AF37',
+                            600: '#AA820A',
+                            800: '#5C4402',
+                        },
+                        darkBg: '#090c13',
+                        cardBg: '#0f1420',
+                        accentBlue: '#00f0ff',
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        sans: ['Montserrat', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @media print {
+            body {
+                background: none !important;
+                color: #000 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .certificate-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                page-break-inside: avoid;
+            }
+            .gold-gradient-text {
+                -webkit-text-fill-color: #aa820a !important;
+            }
+        }
+
+        .gold-border {
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #fce082 0%, #d4af37 50%, #5c4402 100%) 1;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fff3c4 0%, #e6c25a 50%, #aa820a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-button {
+            background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .gold-button:hover {
+            background: linear-gradient(135deg, #e6c25a 0%, #d4af37 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .corner-deco {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-color: #d4af37;
+            pointer-events: none;
+        }
+        .top-left { top: 12px; left: 12px; border-top: 2px solid; border-left: 2px solid; }
+        .top-right { top: 12px; right: 12px; border-top: 2px solid; border-right: 2px solid; }
+        .bottom-left { bottom: 12px; left: 12px; border-bottom: 2px solid; border-left: 2px solid; }
+        .bottom-right { bottom: 12px; right: 12px; border-bottom: 2px solid; border-right: 2px solid; }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.03;
+            pointer-events: none;
+            width: 60%;
+            max-width: 450px;
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-200 font-sans min-h-screen pb-12">
+
+    <!-- Control Panel -->
+    <header class="no-print bg-slate-900/80 backdrop-blur-md border-b border-gold-500/20 sticky top-0 z-50 px-6 py-4 mb-8">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-shield-halved text-gold-400 text-2xl"></i>
+                <div>
+                    <h1 class="font-cinzel font-bold text-lg text-gold-300 tracking-wider">EAMR</h1>
+                    <p class="text-xs text-slate-400">Generador de Certificados de Autenticidad</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="toggleEditor()" class="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-md text-slate-200 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-pen-to-square"></i> Editar Datos
+                </button>
+                <button onclick="window.print()" class="gold-button text-slate-950 font-bold px-5 py-2 rounded-md text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Imprimir / Guardar PDF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Editor Drawer Modal -->
+    <div id="editorPanel" class="no-print hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+        <div class="bg-cardBg border border-gold-500/40 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-3">
+                <h3 class="font-cinzel text-lg font-bold text-gold-400">Editar Información del Certificado</h3>
+                <button onclick="toggleEditor()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="certForm" class="space-y-4 text-sm" onsubmit="event.preventDefault(); updateCertificate();">
+                <!-- Cargar archivo de audio para autodetección -->
+                <div class="bg-slate-900/90 p-3 rounded border border-gold-500/30">
+                    <label class="block text-gold-300 font-semibold mb-1 text-xs uppercase tracking-wider">
+                        <i class="fa-solid fa-file-audio mr-1"></i> Cargar Canción (MP3 / WAV)
+                    </label>
+                    <input type="file" id="audioFileInput" accept="audio/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold-500 file:text-slate-950 hover:file:bg-gold-400 cursor-pointer">
+                    <p id="hashStatus" class="text-[10px] text-slate-500 mt-1 italic">Selecciona un archivo para autodetección de datos.</p>
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Título de la Obra</label>
+                    <input type="text" id="inTitle" value="" placeholder="Título de la obra" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-gold-300 font-semibold focus:outline-none focus:border-gold-400">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Edición Especial</label>
+                    <input type="text" id="inEdition" value="SONIC UNICORN EDITION" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-gold-400">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Titular / Propietario</label>
+                    <input type="text" id="inOwner" value="" placeholder="Nombre del Titular" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-gold-400">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Fecha de Emisión</label>
+                    <input type="text" id="inDate" value="" placeholder="Mes Año" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-gold-400">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Código de Registro (Hash)</label>
+                    <input type="text" id="inHash" value="" placeholder="Generado automáticamente" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 font-mono text-slate-300 focus:outline-none focus:border-gold-400">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Huella Acústica Algorítmica (ADN)</label>
+                    <input type="text" id="inAcoustic" value="" placeholder="Generado automáticamente" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 font-mono text-slate-300 focus:outline-none focus:border-gold-400">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Texto Principal</label>
+                    <textarea id="inMainText" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-300 focus:outline-none focus:border-gold-400">Se certifica formalmente que la obra musical en mención es una creación sonora 100% original, desarrollada mediante procesos avanzados de arquitectura de identidad sonora y minería emocional.</textarea>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="toggleEditor()" class="px-4 py-2 bg-slate-800 rounded text-slate-300">Cancelar</button>
+                    <button type="submit" class="gold-button px-5 py-2 text-slate-950 font-bold rounded">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VISTA PREVIA DEL CERTIFICADO -->
+    <main class="max-w-4xl mx-auto px-4">
+        <div id="certificate" class="certificate-container relative bg-cardBg text-slate-100 border-2 border-gold-500/50 p-8 sm:p-14 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden rounded-lg">
+            
+            <div class="absolute inset-3 border border-gold-500/30 rounded pointer-events-none"></div>
+            <div class="absolute inset-5 border border-gold-500/10 rounded pointer-events-none"></div>
+
+            <div class="corner-deco top-left"></div>
+            <div class="corner-deco top-right"></div>
+            <div class="corner-deco bottom-left"></div>
+            <div class="corner-deco bottom-right"></div>
+
+            <svg class="watermark text-gold-500" viewBox="0 0 200 200" fill="currentColor">
+                <path d="M100,15 C55,15 20,45 20,90 C20,130 45,160 70,175 C75,178 80,170 78,165 C70,145 75,125 90,115 C92,113 95,115 95,118 C92,135 100,155 115,165 C118,167 122,162 120,158 C112,140 118,120 130,110 C132,108 135,110 135,113 C135,130 148,148 165,150 C170,150 172,142 167,138 C155,128 152,110 160,95 C175,95 180,120 180,90 C180,45 145,15 100,15 Z" />
+            </svg>
+
+            <div class="text-center relative z-10 space-y-3">
+                <div class="flex justify-center items-center gap-2 mb-2">
+                    <span class="h-[1px] w-12 bg-gradient-to-r from-transparent to-gold-400"></span>
+                    <i class="fa-solid fa-fingerprint text-gold-400 text-xl"></i>
+                    <span class="h-[1px] w-12 bg-gradient-to-l from-transparent to-gold-400"></span>
+                </div>
+                
+                <h2 class="font-cinzel text-2xl sm:text-4xl font-black tracking-[0.2em] gold-gradient-text uppercase">
+                    Certificado de Autenticidad
+                </h2>
+
+                <div class="inline-block px-4 py-1 bg-gold-500/10 border border-gold-500/30 rounded-full">
+                    <p id="outEdition" class="font-mono text-xs sm:text-sm text-gold-300 uppercase tracking-widest">
+                        SONIC UNICORN EDITION
+                    </p>
+                </div>
+            </div>
+
+            <div class="my-8 flex items-center justify-center gap-4 relative z-10 opacity-70">
+                <div class="h-[1px] bg-gradient-to-r from-transparent via-gold-500 to-transparent w-full"></div>
+                <i class="fa-solid fa-compact-disc text-gold-400 text-xs"></i>
+                <div class="h-[1px] bg-gradient-to-r from-transparent via-gold-500 to-transparent w-full"></div>
+            </div>
+
+            <div class="relative z-10 text-center space-y-6 max-w-2xl mx-auto">
+                <p class="text-xs sm:text-sm text-slate-400 uppercase tracking-wider">
+                    Se certifica formalmente que la obra musical registrada como:
+                </p>
+
+                <div class="py-3 px-6 bg-slate-900/60 border-y border-gold-500/30 backdrop-blur-sm">
+                    <h3 id="outTitle" class="font-cinzel text-xl sm:text-3xl font-extrabold text-gold-300 tracking-wide uppercase">
+                        "TITULO DE LA OBRA"
+                    </h3>
+                </div>
+
+                <p id="outMainText" class="text-sm sm:text-base text-slate-300 font-light leading-relaxed">
+                    Se certifica formalmente que la obra musical en mención es una creación sonora 100% original, desarrollada mediante procesos avanzados de arquitectura de identidad sonora y minería emocional.
+                </p>
+
+                <p class="text-xs sm:text-sm text-slate-400 italic">
+                    Esta pieza es irrepetible, inédita y posee una estructura armónica y narrativa diseñada para generar una conexión emocional única e inalterable.
+                </p>
+            </div>
+
+            <div class="my-8 relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/80 p-4 rounded border border-gold-500/20 font-mono text-xs">
+                <div class="space-y-1 text-left">
+                    <p class="text-slate-400">Titular de Derechos:</p>
+                    <p id="outOwner" class="text-gold-300 font-semibold text-sm">--</p>
+                </div>
+                <div class="space-y-1 sm:text-right text-left">
+                    <p class="text-slate-400">Fecha de Emisión:</p>
+                    <p id="outDate" class="text-slate-200">--</p>
+                </div>
+                <div class="space-y-1 text-left border-t border-slate-800 pt-2 sm:col-span-1">
+                    <p class="text-slate-500 text-[10px]">CÓDIGO DE REGISTRO (HASH):</p>
+                    <p id="outHash" class="text-slate-300 select-all">--</p>
+                </div>
+                <div class="space-y-1 sm:text-right text-left border-t border-slate-800 pt-2 sm:col-span-1">
+                    <p class="text-slate-500 text-[10px]">HUELLA ACÚSTICA (ADN):</p>
+                    <p id="outAcoustic" class="text-slate-300 select-all">--</p>
+                </div>
+            </div>
+
+            <div class="mt-12 relative z-10 pt-6 border-t border-gold-500/20 flex flex-col sm:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full border border-gold-400/50 bg-gold-500/10 flex items-center justify-center text-gold-400">
+                        <i class="fa-solid fa-wave-square text-lg"></i>
+                    </div>
+                    <div class="text-left">
+                        <p class="font-cinzel font-bold text-xs text-gold-300">EAMR</p>
+                        <p class="text-[10px] text-slate-400">Estratega de Activos Musicales Registrables</p>
+                        <p class="text-[9px] text-slate-500">Arquitectura Sonora &amp; Minería Emocional</p>
+                    </div>
+                </div>
+
+                <a href="https://edheller33.github.io/eamr-verificacion/enchiladeria_453.html" target="_blank" rel="noopener" class="flex items-center gap-3 bg-white p-2 rounded shadow hover:shadow-lg transition-shadow">
+                    <img src="qr_eamr.png" alt="Código QR de verificación EAMR" class="w-12 h-12 object-contain">
+                    <div class="text-left text-slate-900">
+                        <p class="font-bold text-[9px] uppercase tracking-wider">Verificación</p>
+                        <p class="text-[8px] text-slate-600">Ecosistema Interactivo</p>
+                    </div>
+                </a>
+
+                <div class="text-center sm:text-right">
+                    <div class="font-serif italic text-gold-300 text-lg mb-1 opacity-90">
+                        EAMR Studio Certifications
+                    </div>
+                    <div class="h-[1px] w-40 bg-gold-500/40 ml-auto my-1"></div>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Firma de Emisión Autorizada</p>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center text-[10px] text-slate-500 relative z-10 font-mono">
+                Propiedad Intelectual Garantizada &bull; Documento Generado por Arquitectura Sonora EAMR
+            </div>
+        </div>
+    </main>
+
+    <!-- Script de interacción y procesamiento de audio -->
+    <script>
+        function toggleEditor() {
+            const panel = document.getElementById('editorPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        function updateCertificate() {
+            const titleVal = document.getElementById('inTitle').value.trim();
+            document.getElementById('outTitle').innerText = titleVal ? '"' + titleVal.toUpperCase() + '"' : '""';
+            document.getElementById('outEdition').innerText = document.getElementById('inEdition').value.toUpperCase();
+            document.getElementById('outOwner').innerText = document.getElementById('inOwner').value || '--';
+            document.getElementById('outDate').innerText = document.getElementById('inDate').value || '--';
+            document.getElementById('outHash').innerText = document.getElementById('inHash').value || '--';
+            document.getElementById('outAcoustic').innerText = document.getElementById('inAcoustic').value || '--';
+            document.getElementById('outMainText').innerText = document.getElementById('inMainText').value;
+
+            toggleEditor();
+        }
+
+        document.getElementById('audioFileInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const statusEl = document.getElementById('hashStatus');
+            statusEl.innerText = "Procesando datos del archivo...";
+            statusEl.className = "text-[10px] mt-1 italic text-gold-400";
+
+            try {
+                // 1. Limpieza de Nombre de Canción
+                let cleanName = file.name
+                    .replace(/\.[^/.]+$/, "")             // Quitar extensión
+                    .replace(/[-_]/g, " ")                // Reemplazar guiones por espacios
+                    .replace(/[^a-zA-Z0-9 áéíóúÁÉÍÓÚñÑ]/g, "") // Quitar símbolos
+                    .trim()
+                    .toUpperCase();
+
+                document.getElementById('inTitle').value = cleanName;
+
+                // 2. Fecha Actual Autogenerada
+                const now = new Date();
+                const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                const fechaActual = `${meses[now.getMonth()]} ${now.getFullYear()}`;
+                document.getElementById('inDate').value = fechaActual;
+
+                // 3. Procesamiento de Audio (SHA-256)
+                const arrayBuffer = await file.arrayBuffer();
+                const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const sha256Hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+                
+                const shortHash = `EAMR-${now.getFullYear()}-${sha256Hash.substring(0, 8)}-SU`;
+                document.getElementById('inHash').value = shortHash;
+
+                // 4. ADN Espectral (Huella Acústica)
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+                
+                const acousticFingerprint = generateAcousticDNA(audioBuffer);
+                document.getElementById('inAcoustic').value = acousticFingerprint;
+
+                // Actualizar vista previa del certificado automáticamente
+                updateCertificate();
+
+                statusEl.innerText = "✓ Título, fecha, HASH y Huella cargados con éxito.";
+                statusEl.className = "text-[10px] mt-1 italic text-emerald-400 font-semibold";
+
+            } catch (err) {
+                console.error(err);
+                statusEl.innerText = "Error al procesar el archivo de audio.";
+                statusEl.className = "text-[10px] mt-1 italic text-rose-400 font-semibold";
+            }
+        });
+
+        function generateAcousticDNA(audioBuffer) {
+            const channelData = audioBuffer.getChannelData(0);
+            const samples = 16; 
+            const blockSize = Math.floor(channelData.length / samples);
+            let blocksHex = [];
+
+            for (let i = 0; i < samples; i++) {
+                let sum = 0;
+                for (let j = 0; j < blockSize; j += 10) {
+                    sum += Math.abs(channelData[i * blockSize + j]);
+                }
+                const avg = Math.floor((sum / (blockSize / 10)) * 255);
+                blocksHex.push(avg.toString(16).padStart(2, '0').toUpperCase());
+            }
+
+            const chunk1 = blocksHex.slice(0, 2).join('');
+            const chunk2 = blocksHex.slice(2, 4).join('');
+            const chunk3 = blocksHex.slice(4, 6).join('');
+            const chunk4 = blocksHex.slice(6, 8).join('');
+
+            return `${chunk1}-${chunk2}-${chunk3}-${chunk4}-EAMR`;
+        }
+    </script>
+</body>
+</html>
